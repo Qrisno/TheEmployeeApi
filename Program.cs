@@ -1,4 +1,9 @@
 var builder = WebApplication.CreateBuilder(args);
+var employees = new List<Employee>
+{
+    new Employee { Id = 1, FirstName = "John", LastName = "Doe" },
+    new Employee { Id = 2, FirstName = "Jane", LastName = "Smith" }
+};
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -15,5 +20,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapGet("/employees", () =>
+{
+    return employees;
+});
 
 app.Run();
