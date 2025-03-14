@@ -23,7 +23,7 @@ app.UseHttpsRedirection();
 
 app.MapGet("/employees", () =>
 {
-    return employees;
+    return Results.Ok(employees);
 });
 
 app.Run();
