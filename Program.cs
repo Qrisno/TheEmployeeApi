@@ -28,7 +28,7 @@ app.MapGet("/employees", () =>
     return Results.Ok(employees);
 });
 
-app.MapGet("/employees/{id}", (int id) =>
+app.MapGet("/employees/{id:int}", (int id) =>
 {
     var employee = employees.SingleOrDefault(e => e.Id == id);
     bool employeeNotFound = employee == null;
@@ -39,6 +39,16 @@ app.MapGet("/employees/{id}", (int id) =>
     }
 
     return Results.Ok(employee);
+});
+
+app.MapPost("/AddEmployee", (Employee employee) =>
+{
+    int LatestEmployeeId = employees.Last().Id;
+    int NewEmployeeId = LatestEmployeeId + 1;
+    var NewEmployee = new Employee { Id = NewEmployeeId, FirstName = employee.FirstName, LastName = employee.LastName };
+    employees.Add(NewEmployee);
+    return Results.Created($"employees/{NewEmployeeId}", NewEmployee);
+
 });
 
 app.Run();
