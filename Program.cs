@@ -1,3 +1,5 @@
+using Microsoft.VisualBasic;
+
 var builder = WebApplication.CreateBuilder(args);
 var employees = new List<Employee>
 {
@@ -24,6 +26,19 @@ app.UseHttpsRedirection();
 app.MapGet("/employees", () =>
 {
     return Results.Ok(employees);
+});
+
+app.MapGet("/employees/{id}", (int id) =>
+{
+    var employee = employees.SingleOrDefault(e => e.Id == id);
+    bool employeeNotFound = employee == null;
+
+    if (employeeNotFound)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(employee);
 });
 
 app.Run();
