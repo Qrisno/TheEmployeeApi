@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using TheEmployeeApi;
 using TheEmployeeApi.Employees;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,13 +71,13 @@ employeeRoute.MapPost("AddEmployee", (CreateEmployeeRequest employee, IRepositor
 
     if (!isValid)
     {
-        return Results.BadRequest(validationProblems);
+        return Results.BadRequest(validationProblems.ToValidationProblemDetails());
     }
     var newEmployee = new Employee
     {
         FirstName = employee.FirstName!,
         LastName = employee.LastName!,
-        SocialSecurityNumber = employee.SocialSecurityNumber,
+        SocialSecurityNumber = employee.SocialSecurityNumber!,
         Address1 = employee.Address1,
         Address2 = employee.Address2,
         City = employee.City,

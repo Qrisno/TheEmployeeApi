@@ -6,7 +6,8 @@ public class CreateEmployeeRequest
     public string? FirstName { get; set; }
     [Required(AllowEmptyStrings = false)]
     public string? LastName { get; set; }
-    public required string SocialSecurityNumber { get; set; }
+    [Required(AllowEmptyStrings = false)]
+    public string? SocialSecurityNumber { get; set; }
 
     public string? Address1 { get; set; }
     public string? Address2 { get; set; }
