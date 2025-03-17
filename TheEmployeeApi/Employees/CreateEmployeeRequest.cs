@@ -2,10 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 public class CreateEmployeeRequest
 {
-    [Required(AllowEmptyStrings=false)]
-    public required string FirstName { get; set; }
-    [Required(AllowEmptyStrings=false)]
-    public required string LastName { get; set; }
+    [Required(AllowEmptyStrings = false)]
+    public string? FirstName { get; set; }
+    [Required(AllowEmptyStrings = false)]
+    public string? LastName { get; set; }
     public required string SocialSecurityNumber { get; set; }
 
     public string? Address1 { get; set; }

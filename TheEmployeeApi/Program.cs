@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using TheEmployeeApi.Employees;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,7 +25,8 @@ var employeeRoute = app.MapGroup("/employees");
 employeeRoute.MapGet(string.Empty, (IRepository<Employee> repo) =>
 {
     var employees = repo.GetAll();
-    return Results.Ok(employees.Select(employee => new GetEmployeeResponse{
+    return Results.Ok(employees.Select(employee => new GetEmployeeResponse
+    {
         FirstName = employee.FirstName,
         LastName = employee.LastName,
         Address1 = employee.Address1,
@@ -46,7 +49,8 @@ employeeRoute.MapGet("{id:int}", (int id, IRepository<Employee> repo) =>
         return Results.NotFound();
     }
 
-    return Results.Ok(new GetEmployeeResponse {
+    return Results.Ok(new GetEmployeeResponse
+    {
         FirstName = employee.FirstName,
         LastName = employee.LastName,
         Address1 = employee.Address1,
@@ -59,11 +63,19 @@ employeeRoute.MapGet("{id:int}", (int id, IRepository<Employee> repo) =>
     });
 });
 
-employeeRoute.MapPost("AddEmployee", (CreateEmployeeRequest employee,IRepository<Employee> repo) =>
+employeeRoute.MapPost("AddEmployee", (CreateEmployeeRequest employee, IRepository<Employee> repo) =>
 {
-    var newEmployee = new Employee{
-        FirstName = employee.FirstName,
-        LastName = employee.LastName,
+    var validationProblems = new List<ValidationResult>();
+    var isValid = Validator.TryValidateObject(employee, new ValidationContext(employee), validationProblems, true);
+
+    if (!isValid)
+    {
+        return Results.BadRequest(validationProblems);
+    }
+    var newEmployee = new Employee
+    {
+        FirstName = employee.FirstName!,
+        LastName = employee.LastName!,
         SocialSecurityNumber = employee.SocialSecurityNumber,
         Address1 = employee.Address1,
         Address2 = employee.Address2,
@@ -78,10 +90,12 @@ employeeRoute.MapPost("AddEmployee", (CreateEmployeeRequest employee,IRepository
 
 });
 
-employeeRoute.MapPut("UpdateEmployee", (UpdateEmployeeRequest employee, IRepository<Employee> repo)=>{
+employeeRoute.MapPut("UpdateEmployee", (UpdateEmployeeRequest employee, IRepository<Employee> repo) =>
+{
     var existingEmployee = repo.GetById(employee.Id);
-   
-    if(existingEmployee == null){
+
+    if (existingEmployee == null)
+    {
         return Results.NotFound();
     }
 
