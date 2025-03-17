@@ -1,7 +1,8 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection; 
+using Microsoft.Extensions.DependencyInjection;
+using TheEmployeeApi.Employees;
 
 namespace TheEmployeeAPI.Tests;
 
@@ -14,8 +15,8 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
         _factory = factory;
 
         var repo = _factory.Services.GetRequiredService<IRepository<Employee>>();
-      
-        repo.Create(new Employee { Id=1, SocialSecurityNumber="234",FirstName = "John", LastName = "Doe" });
+
+        repo.Create(new Employee { Id = 1, SocialSecurityNumber = "234", FirstName = "John", LastName = "Doe" });
     }
 
     [Fact]
@@ -31,28 +32,28 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task GetEmployeeById_ReturnOkStatus()
     {
-       HttpClient client =  _factory.CreateClient();
-       
-       var response =  await client.GetAsync("/employees/1");
+        HttpClient client = _factory.CreateClient();
 
-       response.EnsureSuccessStatusCode();
+        var response = await client.GetAsync("/employees/1");
+
+        response.EnsureSuccessStatusCode();
     }
 
     [Fact]
     public async Task GetEmployeeById_ReturnNotFound()
     {
-        HttpClient client =  _factory.CreateClient();
+        HttpClient client = _factory.CreateClient();
         var response = await client.GetAsync("/employees/3870");
 
-        Assert.Equal(HttpStatusCode.NotFound,response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
     public async Task AddEmployee_ReturnCreated()
     {
-        HttpClient client =  _factory.CreateClient();
-        var employee =  new CreateEmployeeRequest{ FirstName = "John", LastName = "Doe", SocialSecurityNumber = "123" };
-        var response =  await client.PostAsJsonAsync("employees/AddEmployee", employee);
+        HttpClient client = _factory.CreateClient();
+        var employee = new CreateEmployeeRequest { FirstName = "John", LastName = "Doe", SocialSecurityNumber = "123" };
+        var response = await client.PostAsJsonAsync("employees/AddEmployee", employee);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
@@ -61,7 +62,7 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task AddEmployee_ReturnBadRequest()
     {
         HttpClient client = _factory.CreateClient();
-        var invalid_employee = new {};
+        var invalid_employee = new { };
 
         var response = await client.PostAsJsonAsync("employees/AddEmployee", invalid_employee);
 
