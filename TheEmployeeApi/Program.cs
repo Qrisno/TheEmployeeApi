@@ -64,7 +64,7 @@ employeeRoute.MapGet("{id:int}", (int id, IRepository<Employee> repo) =>
     });
 });
 
-employeeRoute.MapPost("AddEmployee", (CreateEmployeeRequest employee, IRepository<Employee> repo) =>
+employeeRoute.MapPost("CreateEmployee", (CreateEmployeeRequest employee, IRepository<Employee> repo) =>
 {
     var validationProblems = new List<ValidationResult>();
     var isValid = Validator.TryValidateObject(employee, new ValidationContext(employee), validationProblems, true);

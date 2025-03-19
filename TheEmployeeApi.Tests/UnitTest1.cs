@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using TheEmployeeApi.Employees;
@@ -53,7 +55,7 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
     {
         HttpClient client = _factory.CreateClient();
         var employee = new CreateEmployeeRequest { FirstName = "John", LastName = "Doe", SocialSecurityNumber = "123" };
-        var response = await client.PostAsJsonAsync("employees/AddEmployee", employee);
+        var response = await client.PostAsJsonAsync("employees/CreateEmployee", employee);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
@@ -64,7 +66,7 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
         HttpClient client = _factory.CreateClient();
         var invalid_employee = new { };
 
-        var response = await client.PostAsJsonAsync("employees/AddEmployee", invalid_employee);
+        var response = await client.PostAsJsonAsync("employees/CreateEmployee", invalid_employee);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -89,5 +91,20 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await client.PutAsJsonAsync("employees/UpdateEmployee", employee);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateEmployee_ReturnsBadRequest()
+    {
+        HttpClient client = _factory.CreateClient();
+        var emptyEmployee = new CreateEmployeeRequest();
+
+        var response = await client.PostAsJsonAsync("employees/CreateEmployee", emptyEmployee);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        Assert.Contains("FirstName", problemDetails!.Errors.Keys);
+        Assert.Contains("LastName", problemDetails!.Errors.Keys);
+        Assert.Contains("The FirstName field is required.", problemDetails!.Errors["FirstName"]);
+        Assert.Contains("The LastName field is required.", problemDetails!.Errors["LastName"]);
     }
 }
