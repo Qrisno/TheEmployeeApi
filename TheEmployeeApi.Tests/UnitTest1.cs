@@ -55,7 +55,7 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
     {
         HttpClient client = _factory.CreateClient();
         var employee = new CreateEmployeeRequest { FirstName = "John", LastName = "Doe", SocialSecurityNumber = "123" };
-        var response = await client.PostAsJsonAsync("employees/CreateEmployee", employee);
+        var response = await client.PostAsJsonAsync("employees", employee);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
@@ -66,7 +66,7 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
         HttpClient client = _factory.CreateClient();
         var invalid_employee = new { };
 
-        var response = await client.PostAsJsonAsync("employees/CreateEmployee", invalid_employee);
+        var response = await client.PostAsJsonAsync("employees", invalid_employee);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -77,7 +77,7 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
         HttpClient client = _factory.CreateClient();
         var employee = new UpdateEmployeeRequest { Id = 1, Address1 = "Jane Street" };
 
-        var response = await client.PutAsJsonAsync("employees/UpdateEmployee", employee);
+        var response = await client.PutAsJsonAsync("employees", employee);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -88,7 +88,7 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
         HttpClient client = _factory.CreateClient();
         var employee = new UpdateEmployeeRequest { Id = 3870, Address1 = "Jano" };
 
-        var response = await client.PutAsJsonAsync("employees/UpdateEmployee", employee);
+        var response = await client.PutAsJsonAsync("employees", employee);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -99,7 +99,7 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
         HttpClient client = _factory.CreateClient();
         var emptyEmployee = new CreateEmployeeRequest();
 
-        var response = await client.PostAsJsonAsync("employees/CreateEmployee", emptyEmployee);
+        var response = await client.PostAsJsonAsync("employees", emptyEmployee);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         Assert.Contains("FirstName", problemDetails!.Errors.Keys);

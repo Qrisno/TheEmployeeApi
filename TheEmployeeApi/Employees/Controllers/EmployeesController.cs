@@ -2,17 +2,17 @@
 
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using TheEmployeeApi;
 using TheEmployeeApi.Employees;
 
 public class EmployeesController : BaseController
 {
     public readonly IRepository<Employee> _repository;
-    public readonly IValidator<CreateEmployeeRequest> _validator;
 
-    public EmployeesController(IRepository<Employee> repository, IValidator<CreateEmployeeRequest> validator)
+    public EmployeesController(IRepository<Employee> repository)
     {
         _repository = repository;
-        _validator = validator;
+
     }
 
     [HttpGet]
@@ -78,12 +78,12 @@ public class EmployeesController : BaseController
     [HttpPost]
     public async Task<IActionResult> CreateEmployee(CreateEmployeeRequest employee)
     {
-        var validationResults = await _validator.ValidateAsync(employee);
+        var validationResults = await ValidateAsync(employee);
 
 
         if (!validationResults.IsValid)
         {
-            return ValidationProblem(validationResults.ToString());
+            return ValidationProblem(validationResults.ToModelStateDictionary());
         }
         var newEmployee = new Employee
         {
