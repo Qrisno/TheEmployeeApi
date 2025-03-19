@@ -104,7 +104,7 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
         var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         Assert.Contains("FirstName", problemDetails!.Errors.Keys);
         Assert.Contains("LastName", problemDetails!.Errors.Keys);
-        Assert.Contains("The FirstName field is required.", problemDetails!.Errors["FirstName"]);
-        Assert.Contains("The LastName field is required.", problemDetails!.Errors["LastName"]);
+        Assert.Contains("'First Name' must not be empty.", problemDetails!.Errors["FirstName"]);
+        Assert.Contains("'Last Name' must not be empty.", problemDetails!.Errors["LastName"]);
     }
 }
