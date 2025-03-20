@@ -8,10 +8,12 @@ using TheEmployeeApi.Employees;
 public class EmployeesController : BaseController
 {
     public readonly IRepository<Employee> _repository;
+    private readonly ILogger<EmployeesController> _logger;
 
-    public EmployeesController(IRepository<Employee> repository)
+    public EmployeesController(IRepository<Employee> repository, ILogger<EmployeesController> logger)
     {
         _repository = repository;
+        _logger = logger;
 
     }
 
@@ -57,6 +59,7 @@ public class EmployeesController : BaseController
     [HttpPut]
     public IActionResult UpdateEmployee(UpdateEmployeeRequest employee)
     {
+        _logger.LogInformation($"Trying to update Employee with ID:  {employee.Id}");
         var existingEmployee = _repository.GetById(employee.Id);
 
         if (existingEmployee == null)
