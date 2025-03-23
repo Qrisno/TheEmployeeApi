@@ -28,7 +28,7 @@ public class EmployeesController : BaseController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public IActionResult GetAll()
     {
-        var employees = _repository.GetAll();
+        var employees = _repository.GetAll().Select(employee => ConvertEmployeeToGetEmployeeResponse(employee));
         return Ok(employees);
     }
 
@@ -56,18 +56,29 @@ public class EmployeesController : BaseController
             return NotFound();
         }
 
-        return Ok(new GetEmployeeResponse
+        return Ok(ConvertEmployeeToGetEmployeeResponse(employee));
+    }
+
+    [HttpGet("{id:int}/Benefits")]
+    [ProducesResponseType(typeof(GetEmployeeResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public IActionResult GetEmployeeBenefits([FromRoute] int id)
+    {
+        var employee = _repository.GetById(id);
+
+        if (employee == null)
         {
-            FirstName = employee.FirstName,
-            LastName = employee.LastName,
-            Address1 = employee.Address1,
-            Address2 = employee.Address2,
-            City = employee.City,
-            State = employee.State,
-            ZipCode = employee.ZipCode,
-            PhoneNumber = employee.PhoneNumber,
-            Email = employee.Email
-        });
+            return NotFound();
+        }
+
+        return Ok(employee.Benefits.Select(benefit => new GetEmployeeResponseEmployeeBenefit
+        {
+            Id = benefit.Id,
+            EmployeeId = benefit.EmployeeId,
+            BenefitType = benefit.BenefitType,
+            Cost = benefit.Cost
+        }));
     }
 
 
@@ -133,9 +144,33 @@ public class EmployeesController : BaseController
             State = employee.State,
             ZipCode = employee.ZipCode,
             PhoneNumber = employee.PhoneNumber,
-            Email = employee.Email
+            Email = employee.Email,
+            Benefits = employee.Benefits
         };
         _repository.Create(newEmployee);
         return Created();
+    }
+
+    private GetEmployeeResponse ConvertEmployeeToGetEmployeeResponse(Employee employee)
+    {
+        return new GetEmployeeResponse
+        {
+            FirstName = employee.FirstName,
+            LastName = employee.LastName,
+            Address1 = employee.Address1,
+            Address2 = employee.Address2,
+            City = employee.City,
+            State = employee.State,
+            ZipCode = employee.ZipCode,
+            PhoneNumber = employee.PhoneNumber,
+            Email = employee.Email,
+            Benefits = employee.Benefits.Select(benefit => new GetEmployeeResponseEmployeeBenefit
+            {
+                Id = benefit.Id,
+                EmployeeId = benefit.EmployeeId,
+                BenefitType = benefit.BenefitType,
+                Cost = benefit.Cost
+            }).ToList()
+        };
     }
 }

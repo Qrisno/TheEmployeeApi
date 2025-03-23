@@ -18,7 +18,30 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
 
         var repo = _factory.Services.GetRequiredService<IRepository<Employee>>();
 
-        repo.Create(new Employee { Id = 1, SocialSecurityNumber = "234", FirstName = "John", LastName = "Doe" });
+        repo.Create(new Employee
+        {
+            Id = 1,
+            SocialSecurityNumber = "234",
+            FirstName = "John",
+            LastName = "Doe",
+            Benefits = new List<EmployeeBenefits>
+            {
+                new EmployeeBenefits
+                {
+                    Id = 12,
+                    EmployeeId = 1,
+                    BenefitType =  BenefitType.Health,
+                    Cost = 12.4M
+                },
+                new EmployeeBenefits
+                {
+                    Id = 122,
+                    EmployeeId = 1,
+                    BenefitType =  BenefitType.Dental,
+                    Cost = 12.4M
+                }
+            }
+        });
     }
 
     [Fact]
@@ -106,5 +129,30 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Contains("LastName", problemDetails!.Errors.Keys);
         Assert.Contains("'First Name' must not be empty.", problemDetails!.Errors["FirstName"]);
         Assert.Contains("'Last Name' must not be empty.", problemDetails!.Errors["LastName"]);
+    }
+
+    [Fact]
+    public async Task GetEmployeeBenefits_ReturnsNotFound()
+    {
+        HttpClient client = _factory.CreateClient();
+        var res = await client.GetAsync("employees/0/Benefits");
+        Assert.Equal(HttpStatusCode.NotFound, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetEmployeeBenefits_ReturnsOk()
+    {
+        HttpClient client = _factory.CreateClient();
+        var res = await client.GetAsync("employees/1/Benefits");
+        res.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task GetEmployeeBenefits_ReturnsTwoBenefits()
+    {
+        HttpClient client = _factory.CreateClient();
+        var res = await client.GetAsync("employees/1/Benefits");
+        var benefits = await res.Content.ReadFromJsonAsync<IEnumerable<GetEmployeeResponseEmployeeBenefit>>();
+        Assert.Equal(2, benefits.Count());
     }
 }

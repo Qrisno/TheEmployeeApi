@@ -12,7 +12,10 @@ builder.Services.AddControllers(options =>
     options.Filters.Add<FluentValidationFilter>();
 });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "TheEmployeeAPI.xml"));
+});
 builder.Services.AddSingleton<IRepository<Employee>, EmployeeRepository>();
 builder.Services.AddProblemDetails();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
