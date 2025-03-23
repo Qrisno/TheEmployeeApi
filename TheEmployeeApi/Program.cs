@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using TheEmployeeApi;
 using TheEmployeeApi.Employees;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -19,6 +20,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddSingleton<IRepository<Employee>, EmployeeRepository>();
 builder.Services.AddProblemDetails();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddDbContext<AppDbContext>(options => { options.UseSqlite("Data Source=employees.db"); });
 var app = builder.Build();
 app.MapControllers();
 
