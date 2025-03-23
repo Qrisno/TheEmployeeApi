@@ -22,6 +22,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddDbContext<AppDbContext>(options => { options.UseSqlite("Data Source=employees.db"); });
 var app = builder.Build();
+SeedData.Seed(app.Services);
 app.MapControllers();
 
 // Configure the HTTP request pipeline.
