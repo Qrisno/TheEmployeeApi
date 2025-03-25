@@ -1,13 +1,6 @@
-using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using TheEmployeeApi;
 using TheEmployeeApi.Employees;// Assuming models like CreateEmployeeRequest, UpdateEmployeeRequest, etc., are here
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 
 public class EmployeesController : BaseController
@@ -29,9 +22,25 @@ public class EmployeesController : BaseController
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<GetEmployeeResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] GetAllEmployeesRequest? request)
     {
-        var employees = await _dbContext.Employees.ToArrayAsync();
+        int page = request?.Page ?? 1;
+        int recordsPerPage = request?.RecordsPerPage ?? 100;
+        IQueryable<Employee> query = _dbContext.Employees.Skip((page - 1) * recordsPerPage).Take(recordsPerPage);
+
+        if (request != null)
+        {
+            if (!string.IsNullOrWhiteSpace(request.FirstNameContains))
+            {
+                query = query.Where(e => e.FirstName.Contains(request.FirstNameContains));
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.LastNameContains))
+            {
+                query = query.Where(e => e.LastName.Contains(request.LastNameContains));
+            }
+        }
+        var employees = await query.ToArrayAsync();
         return Ok(employees.Select(employee => ConvertEmployeeToGetEmployeeResponse(employee)));
     }
 
