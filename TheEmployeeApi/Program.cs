@@ -17,12 +17,17 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "TheEmployeeAPI.xml"));
 });
-builder.Services.AddSingleton<IRepository<Employee>, EmployeeRepository>();
+
 builder.Services.AddProblemDetails();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddDbContext<AppDbContext>(options => { options.UseSqlite("Data Source=employees.db"); });
 var app = builder.Build();
-SeedData.Seed(app.Services);
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    SeedData.Seed(services);
+}
+
 app.MapControllers();
 
 // Configure the HTTP request pipeline.

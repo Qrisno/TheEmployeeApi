@@ -6,15 +6,18 @@ using TheEmployeeApi;
 using TheEmployeeApi.Employees;// Assuming models like CreateEmployeeRequest, UpdateEmployeeRequest, etc., are here
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using Microsoft.EntityFrameworkCore;
 
 public class EmployeesController : BaseController
 {
-    public readonly IRepository<Employee> _repository;
+    public readonly AppDbContext _dbContext;
     private readonly ILogger<EmployeesController> _logger;
 
-    public EmployeesController(IRepository<Employee> repository, ILogger<EmployeesController> logger)
+    public EmployeesController(AppDbContext dbContext, ILogger<EmployeesController> logger)
     {
-        _repository = repository;
+        _dbContext = dbContext;
         _logger = logger;
 
     }
@@ -26,10 +29,10 @@ public class EmployeesController : BaseController
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<GetEmployeeResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
-        var employees = _repository.GetAll().Select(employee => ConvertEmployeeToGetEmployeeResponse(employee));
-        return Ok(employees);
+        var employees = await _dbContext.Employees.ToArrayAsync();
+        return Ok(employees.Select(employee => ConvertEmployeeToGetEmployeeResponse(employee)));
     }
 
     /// <summary>
@@ -41,14 +44,15 @@ public class EmployeesController : BaseController
     [ProducesResponseType(typeof(GetEmployeeResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public IActionResult GetById([FromRoute] string id)
+    public async Task<IActionResult> GetById([FromRoute] string id)
     {
         if (!int.TryParse(id, out var employeeId))
         {
             return BadRequest("Invalid ID format.");
         }
 
-        var employee = _repository.GetById(employeeId);
+        var employees = await _dbContext.Employees.ToArrayAsync();
+        var employee = employees.SingleOrDefault(employee => employee.Id == int.Parse(id));
 
 
         if (employee == null)
@@ -63,9 +67,10 @@ public class EmployeesController : BaseController
     [ProducesResponseType(typeof(GetEmployeeResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public IActionResult GetEmployeeBenefits([FromRoute] int id)
+    public async Task<IActionResult> GetEmployeeBenefits([FromRoute] int id)
     {
-        var employee = _repository.GetById(id);
+        var employees = await _dbContext.Employees.ToArrayAsync();
+        var employee = employees.SingleOrDefault(employee => employee.Id == id);
 
         if (employee == null)
         {
@@ -92,10 +97,11 @@ public class EmployeesController : BaseController
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public IActionResult UpdateEmployee(UpdateEmployeeRequest employee)
+    public async Task<IActionResult> UpdateEmployee(UpdateEmployeeRequest employee)
     {
         _logger.LogInformation($"Trying to update Employee with ID:  {employee.Id}");
-        var existingEmployee = _repository.GetById(employee.Id);
+        var employees = await _dbContext.Employees.ToArrayAsync();
+        var existingEmployee = employees.SingleOrDefault(e => employee.Id == e.Id);
 
         if (existingEmployee == null)
         {
@@ -110,7 +116,7 @@ public class EmployeesController : BaseController
         existingEmployee.ZipCode = employee.ZipCode;
         existingEmployee.PhoneNumber = employee.PhoneNumber;
         existingEmployee.Email = employee.Email;
-        _repository.Update(existingEmployee);
+        _dbContext.Employees.Update(existingEmployee);
         return Ok(existingEmployee);
     }
 
@@ -147,7 +153,7 @@ public class EmployeesController : BaseController
             Email = employee.Email,
             Benefits = employee.Benefits
         };
-        _repository.Create(newEmployee);
+        _dbContext.Employees.Add(newEmployee);
         return Created();
     }
 
