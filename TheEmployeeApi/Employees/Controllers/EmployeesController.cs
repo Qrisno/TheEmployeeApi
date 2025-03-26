@@ -126,6 +126,7 @@ public class EmployeesController : BaseController
         existingEmployee.PhoneNumber = employee.PhoneNumber;
         existingEmployee.Email = employee.Email;
         _dbContext.Employees.Update(existingEmployee);
+        await _dbContext.SaveChangesAsync();
         return Ok(existingEmployee);
     }
 
@@ -163,6 +164,7 @@ public class EmployeesController : BaseController
             Benefits = employee.Benefits
         };
         _dbContext.Employees.Add(newEmployee);
+        await _dbContext.SaveChangesAsync();
         return Created();
     }
 
